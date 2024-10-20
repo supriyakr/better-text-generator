@@ -5,11 +5,17 @@ import argparse
 # Set the font path (update to your font file location)
   # Update this to the correct path for your font
 
-def generate_image(text: str, font_size: int = 20):
-    # Create a blank image with white background
-    image = Image.new("RGB", (400, 200), "white")
+def generate_image(text: str, font_size: int = 50):
+   
+    # Open an existing image
+    input_image_path =  "../media/input/sample.jpg"
+    image = Image.open(input_image_path)
+    
+    # Create an ImageDraw object
     draw = ImageDraw.Draw(image)
-    output_path="../media/output_image.png"
+    
+  
+    output_path="../media/output/output_image.png"
     image.save(output_path)
     FONT_PATH = "/fonts/Arima.ttf"
 
@@ -25,12 +31,12 @@ def generate_image(text: str, font_size: int = 20):
     position = ((image.width - text_width) // 2, (image.height - text_height) // 2)
     
     # Add the text to the image
-    draw.text(position, text, fill="black", font=font)
+    draw.text(position, text, fill="white", font=font)
 
     # Save the image to the specified output path
  
     image.save(output_path)
     print(f"Image saved at {output_path}")
 
-generate_image(text= "Happy birthday Supriya!!")
+generate_image(text= "Baking Classes!!")
 
