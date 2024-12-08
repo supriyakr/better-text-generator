@@ -3,10 +3,53 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import easyocr
 from google.cloud import vision
+import subprocess
+import os
+from Segmind import inpaint_image_with_stable_diffusion
 
 # Set the path to your service account JSON key
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./back-end/dev-acolyte-442123-f9-724f681a960e.json"
+
+def run_lama_inpainting(image_path, mask_path, output_path, lama_path="./back-end/lama"):
+    """
+    Run LaMa inpainting on an image with a mask.
+    :param image_path: Path to the input image.
+    :param mask_path: Path to the binary mask.
+    :param output_path: Path to save the inpainted image.
+    :param lama_path: Path to the LaMa repository.
+    """
+    # Prepare LaMa input directory
+    input_dir = os.path.join(lama_path, "data")
+    os.makedirs(input_dir, exist_ok=True)
+    output_dir = os.path.join(lama_path, "output")
+    os.makedirs(output_dir, exist_ok=True)
+  
+
+    # Copy input image and mask to LaMa's input directory
+    os.system(f"cp {image_path} {input_dir}/image.png")
+    os.system(f"cp {mask_path} {input_dir}/mask.png")
+
+    # Run LaMa inpainting using the specified model checkpoint
+    lama_command = (
+        f"python {lama_path}/bin/predict.py "
+        f"--config {lama_path}/configs/prediction/default.yaml"
+        f"model.path={lama_path}/big-lama/best.ckpt"
+        f"indir={input_dir} "
+        f"outdir={output_dir}/{output_path} "
+    )
+    # Run the command
+    result = subprocess.run(lama_command, shell=True, text=True, capture_output=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(f"LaMa inpainting failed: {result.stderr}")
+
+    # Copy the output image to the desired path
+    inpainted_image_path = os.path.join(output_dir, "image.png")
+    if not os.path.exists(inpainted_image_path):
+        raise FileNotFoundError(f"Inpainted image not found at {inpainted_image_path}")
+
+    print(f"Inpainted image saved to {output_path}")
 
 def preprocess_image_for_ocr(image):
     """
@@ -83,7 +126,7 @@ def detect_text_with_google_ocr(image_path):
 
     return boxes
 
-def remove_text(image, boxes):
+def create_mask(image, boxes):
     """
     Remove text from the given image using inpainting.
     """
@@ -100,12 +143,7 @@ def remove_text(image, boxes):
 
         cv2.rectangle(mask, (x1, y1), (x2, y2), 255, -1)
 
-    # Optionally, you can smooth the mask edges
-    # mask = cv2.GaussianBlur(mask, (5, 5), 0)
-
-    # Increase inpaintRadius if needed
-    inpainted_image = cv2.inpaint(image, mask, inpaintRadius=5, flags=cv2.INPAINT_TELEA)
-    return inpainted_image
+    return mask
 
 def insert_new_text(image, inpainted_image, boxes, new_text, font_path, font_size=30):
     """
@@ -161,7 +199,21 @@ def process_image_with_layered_ocr(image_path, output_path, new_text, font_path)
     all_boxes = easyocr_boxes + google_ocr_boxes
 
     # Remove text using the combined boxes
-    inpainted_image = remove_text(image, all_boxes)
+    mask = create_mask(image, all_boxes)
+
+    # Save the input and mask images
+    cv2.imwrite("input_image.png", image)
+    cv2.imwrite("mask_image.png", mask) 
+
+    # Run LaMa inpainting
+    # Run LaMa
+   # run_lama_inpainting("input_image.png", "mask_image.png", "inpainted_output.png")
+    response = inpaint_image_with_stable_diffusion(image, mask);
+
+    # Load the result for further processing
+    inpainted_image = cv2.imread("inpainted_output.png")
+    
+
 
     # Add new text at the position of the first detected text
     final_image = insert_new_text(image, inpainted_image, all_boxes, new_text, font_path)
