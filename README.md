@@ -21,6 +21,7 @@ Users without design expertise can create professional-looking content by simply
 
   Samples:
   ![poster1](https://github.com/user-attachments/assets/1ea7b064-bb6f-439c-8283-00daa4388c8e)
-  ![poster1](https://github.com/user-attachments/assets/7feeddb2-7e15-4f8f-a163-76267853d851)
+![poster1output](https://github.com/user-attachments/assets/1eec722e-802b-4be3-b26a-f3a0769c9270)
+
 
 
