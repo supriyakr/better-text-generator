@@ -18,3 +18,9 @@ Users without design expertise can create professional-looking content by simply
 - NumPy: A library for numerical computations, also used for handling image arrays.
 - Google Cloud: A cloud platform with Vision API to detect text.
 - OpenAI API: An API for utilizing OpenAI’s image editing and generation capabilities.
+
+  Samples:
+  ![poster1](https://github.com/user-attachments/assets/1ea7b064-bb6f-439c-8283-00daa4388c8e)
+  ![poster1](https://github.com/user-attachments/assets/7feeddb2-7e15-4f8f-a163-76267853d851)
+
+
